@@ -32,7 +32,8 @@ class StorePasswordRequest(BaseModel):
     email: str
     master_password: str
     site: str
-    password: str
+    password: str | None = None  # Optional if use_ai is True
+    use_ai: bool = False
 
 class RetrievePasswordsRequest(BaseModel):
     email: str
@@ -94,7 +95,14 @@ def store_password(req: StorePasswordRequest):
         raise HTTPException(status_code=401, detail="Invalid master password.")
     salt = req.email.encode()  # simple static salt for now
     key = derive_key(req.master_password, salt)
-    enc = encrypt_password(req.password, key)
+    if req.use_ai:
+        password_to_store = generate_password(length=12)
+    elif req.password:
+        password_to_store = req.password
+    else:
+        raise HTTPException(status_code=400, detail="Password is required if use_ai is false.")
+
+    enc = encrypt_password(password_to_store, key)
 
     vault_entry = {
         "site": req.site,
@@ -105,7 +113,11 @@ def store_password(req: StorePasswordRequest):
         vault_db[req.email] = []
     vault_db[req.email].append(vault_entry)
 
-    return {"message": "Password stored securely."}
+    return {
+        "message": "Password stored securely.",
+        "generated": req.use_ai,
+        "password": password_to_store if req.use_ai else None
+    }
 
 @app.post("/retrieve-passwords")
 def retrieve_passwords(req: RetrievePasswordsRequest):
