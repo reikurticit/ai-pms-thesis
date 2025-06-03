@@ -10,6 +10,8 @@ import base64
 
 from ai_module.password_generator import generate_password
 
+import math
+
 
 app = FastAPI()
 ph = PasswordHasher()
@@ -38,6 +40,9 @@ class StorePasswordRequest(BaseModel):
 class RetrievePasswordsRequest(BaseModel):
     email: str
     master_password: str
+
+class PasswordStrengthRequest(BaseModel):
+    password: str
 
 def derive_key(master_password: str, salt: bytes) -> bytes:
     """Derives a 256-bit AES key from the master password."""
@@ -150,3 +155,36 @@ def generate_password_route(
 ):
     password = generate_password(length, use_symbols)
     return {"password": password}
+
+@app.post("/evaluate-strength")
+def evaluate_strength(req: PasswordStrengthRequest):
+    pwd = req.password
+    length = len(pwd)
+
+    # Determine character pool size
+    pool = 0
+    if any(c.islower() for c in pwd):
+        pool += 26
+    if any(c.isupper() for c in pwd):
+        pool += 26
+    if any(c.isdigit() for c in pwd):
+        pool += 10
+    if any(not c.isalnum() for c in pwd):
+        pool += 32
+
+    entropy = round(length * math.log2(pool)) if pool > 0 else 0
+
+    # Rating scale
+    if entropy < 40:
+        rating = "Weak"
+    elif entropy < 60:
+        rating = "Moderate"
+    else:
+        rating = "Strong"
+
+    return {
+        "length": length,
+        "character_pool_size": pool,
+        "entropy_bits": entropy,
+        "rating": rating
+    }
