@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import RegisterPage from './pages/RegisterPage';
-import LoginPage from './pages/LoginPage';
+import VaultPage from './pages/VaultPage';
 
 import './App.css';
 
@@ -24,7 +24,7 @@ function HomePage() {
   return (
     <div style={containerStyle}>
       <button style={buttonStyle} onClick={() => navigate('/register')}>Register</button>
-      <button style={buttonStyle} onClick={() => navigate('/login')}>Login</button>
+      <button style={buttonStyle} onClick={() => navigate('/vault')}>Login</button>
     </div>
   );
 }
@@ -36,7 +36,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/vault" element={<VaultPage />} />
         </Routes>
       </div>
     </Router>

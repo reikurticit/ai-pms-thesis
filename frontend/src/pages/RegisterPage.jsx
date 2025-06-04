@@ -22,7 +22,7 @@ const RegisterPage = () => {
     try {
       await axios.post('/register', { email, password });
       setSuccess(true);
-      setTimeout(() => navigate('/login'), 2000);
+      setTimeout(() => navigate('/vault'), 2000);
     } catch (err) {
       setError(err.response?.data?.detail || 'Registration failed.');
     }
