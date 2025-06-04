@@ -14,8 +14,14 @@ with open("ai_module/data/passwords.txt", "r") as f:
     real_passwords = [line.strip() for line in f if len(line.strip()) >= 8]
 
 # --- AI-generated passwords ---
-from ai_module.password_generator import generate_password
-ai_passwords = [generate_password(length=12) for _ in range(50)]
+try:
+    from ai_module.password_generator import generate_password
+    print("✅ Imported generate_password")
+    ai_passwords = [generate_password(length=12) for _ in range(5)]
+    print("✅ AI passwords generated.")
+except Exception as e:
+    print(f"❌ Error importing or generating AI passwords: {e}")
+    ai_passwords = []
 print("✅ AI passwords generated.")
 
 # --- Random passwords ---
@@ -32,8 +38,13 @@ print("✅ User passwords sampled.")
 
 # --- Helper: evaluate via API ---
 def evaluate(pwd):
-    r = requests.post(url, json={"password": pwd})
-    return r.json()
+    try:
+        r = requests.post(url, json={"password": pwd})
+        r.raise_for_status()
+        return r.json()
+    except Exception as e:
+        print(f"❌ Failed to evaluate password: {pwd[:10]}..., error: {e}")
+        return {"entropy_bits": 0, "rating": "Error", "length": len(pwd), "character_pool_size": 0}
 
 # --- Evaluate all ---
 results = []
@@ -43,13 +54,16 @@ for category, pwds in [
     ("Random", random_passwords),
     ("User", user_passwords),
 ]:
-    for pwd in pwds:
+    print(f"🔍 Evaluating {category} passwords...")
+    for i, pwd in enumerate(pwds):
         data = evaluate(pwd)
         results.append({
             "category": category,
             "password": pwd,
             **data
         })
+        if i % 10 == 0:
+            print(f"   {category} {i + 1}/50 done")
 
 print("✅ Evaluation complete.")
 
@@ -58,3 +72,12 @@ with open("password_strength_results.json", "w") as f:
     json.dump(results, f, indent=2)
 
 print("✅ Evaluation complete. Results saved to password_strength_results.json")
+
+import csv
+
+with open("password_strength_results.csv", "w", newline='') as csvfile:
+    writer = csv.DictWriter(csvfile, fieldnames=["category", "password", "length", "character_pool_size", "entropy_bits", "rating"])
+    writer.writeheader()
+    writer.writerows(results)
+
+print("✅ CSV export complete. Results saved to password_strength_results.csv")

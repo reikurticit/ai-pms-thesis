@@ -8,6 +8,8 @@ const VaultPage = () => {
   const [site, setSite] = useState('');
   const [password, setPassword] = useState('');
   const [useAI, setUseAI] = useState(false);
+  const [length, setLength] = useState(12);
+  const [useSymbols, setUseSymbols] = useState(true);
   const [passwords, setPasswords] = useState([]);
   const [message, setMessage] = useState('');
   const [authError, setAuthError] = useState('');
@@ -31,15 +33,20 @@ const VaultPage = () => {
   const handleStore = async (e) => {
     e.preventDefault();
     try {
+      let finalPassword = password;
+      if (useAI) {
+        const aiRes = await axios.get(`/generate-password?length=${length}&use_symbols=${useSymbols}`);
+        setPassword(aiRes.data.password);
+        finalPassword = aiRes.data.password;
+      }
       const res = await axios.post('/store-password', {
         email,
         master_password: masterPassword,
         site,
-        password: useAI ? undefined : password,
-        use_ai: useAI,
+        password: finalPassword,
+        use_ai: false,
       });
       setMessage('Password stored.');
-      if (useAI && res.data.password) setPassword(res.data.password);
       // Update list
       const updated = await axios.post('/retrieve-passwords', {
         email,
@@ -104,6 +111,28 @@ const VaultPage = () => {
           />
           Use AI-generated password
         </label>
+        {useAI && (
+          <>
+            <label>
+              Length:
+              <input
+                type="number"
+                min="8"
+                max="32"
+                value={length}
+                onChange={(e) => setLength(Number(e.target.value))}
+              />
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={useSymbols}
+                onChange={() => setUseSymbols(!useSymbols)}
+              />
+              Use symbols
+            </label>
+          </>
+        )}
         <button type="submit">Store Password</button>
       </form>
       {message && <p>{message}</p>}
