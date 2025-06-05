@@ -17,7 +17,7 @@ with open("ai_module/data/passwords.txt", "r") as f:
 try:
     from ai_module.password_generator import generate_password
     print("✅ Imported generate_password")
-    ai_passwords = [generate_password(length=12) for _ in range(5)]
+    ai_passwords = [generate_password(length=12) for _ in range(100)]
     print("✅ AI passwords generated.")
 except Exception as e:
     print(f"❌ Error importing or generating AI passwords: {e}")
@@ -29,11 +29,11 @@ def random_password(length=12):
     chars = string.ascii_letters + string.digits + "!@#$%^&*()"
     return ''.join(random.choice(chars) for _ in range(length))
 
-random_passwords = [random_password(12) for _ in range(50)]
+random_passwords = [random_password(12) for _ in range(100)]
 print("✅ Random passwords generated.")
 
 # --- User passwords (sampled from file) ---
-user_passwords = random.sample(real_passwords, 50)
+user_passwords = random.sample(real_passwords, 100)
 print("✅ User passwords sampled.")
 
 # --- Helper: evaluate via API ---

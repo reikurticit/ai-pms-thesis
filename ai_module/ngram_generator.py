@@ -17,7 +17,10 @@ class NGramPasswordGenerator:
     def generate(self, max_length=12, min_length=8):
         prefix = "~" * (self.n - 1)
         result = ""
-        while True:
+        max_attempts = 100
+        attempts = 0
+        while attempts < max_attempts:
+            attempts += 1
             next_chars = self.model.get(prefix, ["~"])
             next_char = random.choice(next_chars)
             if next_char == "~":
@@ -30,4 +33,7 @@ class NGramPasswordGenerator:
                 break
             result += next_char
             prefix = prefix[1:] + next_char
+
+        if attempts == max_attempts:
+            print("⚠️  Password generation hit max attempts. Returning partial result.")
         return result
