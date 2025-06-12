@@ -23,8 +23,26 @@ function HomePage() {
 
   return (
     <div style={containerStyle}>
-      <button style={buttonStyle} onClick={() => navigate('/register')}>Register</button>
-      <button style={buttonStyle} onClick={() => navigate('/vault')}>Login</button>
+      <button 
+        style={{
+            padding: '0.75rem',
+            fontSize: '1rem',
+            borderRadius: '5px',
+            border: 'none',
+            backgroundColor: 'linear-gradient(to right, #1f1c2c, #928dab)',
+            color: 'white',
+            cursor: 'pointer'
+          }} onClick={() => navigate('/register')}>Register</button>
+      <button 
+        style={{
+            padding: '0.75rem',
+            fontSize: '1rem',
+            borderRadius: '5px',
+            border: 'none',
+            backgroundColor: 'linear-gradient(to right, #1f1c2c, #928dab)',
+            color: 'white',
+            cursor: 'pointer'
+          }} onClick={() => navigate('/vault')}>Vault</button>
     </div>
   );
 }

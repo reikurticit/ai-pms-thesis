@@ -14,14 +14,17 @@ class NGramPasswordGenerator:
                 next_char = padded[i + self.n - 1]
                 self.model[prefix].append(next_char)
 
-    def generate(self, max_length=12, min_length=8):
+    def generate(self, max_length=12, min_length=8, include_symbols=False):
         prefix = "~" * (self.n - 1)
         result = ""
         max_attempts = 100
         attempts = 0
+        symbols = "!@#$%^&*"
         while attempts < max_attempts:
             attempts += 1
             next_chars = self.model.get(prefix, ["~"])
+            if include_symbols:
+                next_chars += list(symbols)
             next_char = random.choice(next_chars)
             if next_char == "~":
                 if len(result) >= min_length:

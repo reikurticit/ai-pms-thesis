@@ -8,4 +8,4 @@ ngram_model = NGramPasswordGenerator(n=3)
 ngram_model.train(passwords)
 
 def generate_password(length=12, use_symbols=True):
-    return ngram_model.generate(max_length=length, min_length=8)
+    return ngram_model.generate(max_length=length, min_length=8, include_symbols=use_symbols)

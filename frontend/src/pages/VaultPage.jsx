@@ -113,15 +113,16 @@ const VaultPage = () => {
   }
 
   return (
-    <div className="vault-container">
-      <h2>Password Vault</h2>
-      <form onSubmit={handleStore}>
+    <div className="vault-container" style={{ maxWidth: '600px', margin: 'auto', padding: '2rem' }}>
+      <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Password Vault</h2>
+      <form onSubmit={handleStore} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <input
           type="text"
           placeholder="Site (e.g. github.com)"
           value={site}
           onChange={(e) => setSite(e.target.value)}
           required
+          style={{ padding: '0.75rem', fontSize: '1rem', borderRadius: '5px', border: '1px solid #ccc' }}
         />
         {!useAI && (
           <input
@@ -129,9 +130,10 @@ const VaultPage = () => {
             placeholder="Enter Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            style={{ padding: '0.75rem', fontSize: '1rem', borderRadius: '5px', border: '1px solid #ccc' }}
           />
         )}
-        <label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <input
             type="checkbox"
             checked={useAI}
@@ -141,7 +143,7 @@ const VaultPage = () => {
         </label>
         {useAI && (
           <>
-            <label>
+            <label style={{ display: 'flex', flexDirection: 'column', fontSize: '0.9rem' }}>
               Length:
               <input
                 type="number"
@@ -149,9 +151,10 @@ const VaultPage = () => {
                 max="32"
                 value={length}
                 onChange={(e) => setLength(Number(e.target.value))}
+                style={{ padding: '0.5rem', fontSize: '1rem', borderRadius: '5px', border: '1px solid #ccc', marginBottom:'10px', }}
               />
             </label>
-            <label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <input
                 type="checkbox"
                 checked={useSymbols}
@@ -161,18 +164,40 @@ const VaultPage = () => {
             </label>
           </>
         )}
-        <button type="submit">Store Password</button>
+        <button
+          type="submit"
+          style={{
+            padding: '0.75rem',
+            fontSize: '1rem',
+            borderRadius: '5px',
+            border: 'none',
+            backgroundColor: 'linear-gradient(to right, #1f1c2c, #928dab)',
+            color: 'white',
+            cursor: 'pointer'
+          }}
+        >
+          Store Password
+        </button>
       </form>
-      {message && <p>{message}</p>}
+      {message && <p style={{ color: 'green', marginTop: '1rem' }}>{message}</p>}
 
-      <h3>Stored Passwords</h3>
-      <ul>
+      <h3 style={{ marginTop: '2rem', marginBottom: '1rem' }}>Stored Passwords</h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         {passwords.map((entry, index) => (
-          <li key={index}>
-            <strong>{entry.site}</strong>: {entry.password}
-          </li>
+          <div key={index} style={{
+            border: '1px solid #ccc',
+            borderRadius: '5px',
+            padding: '0.75rem 1rem',
+            backgroundColor: '#f9f9f9',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <strong>{entry.site}</strong>
+            <span>{entry.password}</span>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };

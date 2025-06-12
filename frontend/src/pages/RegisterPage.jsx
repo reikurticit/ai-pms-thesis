@@ -29,15 +29,16 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="island">
-      <h2>Register</h2>
-      <form onSubmit={handleRegister}>
+    <div className="island" style={{ maxWidth: '400px', margin: 'auto', padding: '2rem' }}>
+      <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Register</h2>
+      <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          style={{ padding: '0.75rem', fontSize: '1rem', borderRadius: '5px', border: '1px solid #ccc' }}
         />
         <input
           type="password"
@@ -45,6 +46,7 @@ const RegisterPage = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          style={{ padding: '0.75rem', fontSize: '1rem', borderRadius: '5px', border: '1px solid #ccc' }}
         />
         <input
           type="password"
@@ -52,11 +54,25 @@ const RegisterPage = () => {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
+          style={{ padding: '0.75rem', fontSize: '1rem', borderRadius: '5px', border: '1px solid #ccc' }}
         />
-        <button type="submit">Register</button>
+        <button
+          type="submit"
+          style={{
+            padding: '0.75rem',
+            fontSize: '1rem',
+            borderRadius: '5px',
+            border: 'none',
+            backgroundColor: 'linear-gradient(to right, #1f1c2c, #928dab)',
+            color: 'white',
+            cursor: 'pointer'
+          }}
+        >
+          Register
+        </button>
       </form>
-      {error && <p className="error">{error}</p>}
-      {success && <p className="success">Registration successful! Redirecting to your vault...</p>}
+      {error && <p className="error" style={{ color: 'red', marginTop: '1rem' }}>{error}</p>}
+      {success && <p className="success" style={{ color: 'green', marginTop: '1rem' }}>Registration successful! Redirecting to your vault...</p>}
     </div>
   );
 };
