@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from '../api/axiosInstance';
 
 const VaultPage = () => {
@@ -14,6 +14,32 @@ const VaultPage = () => {
   const [message, setMessage] = useState('');
   const [authError, setAuthError] = useState('');
 
+  // Attempt auto-login from localStorage on mount
+  useEffect(() => {
+    const storedEmail = localStorage.getItem("email");
+    const storedMaster = localStorage.getItem("masterPassword");
+    if (storedEmail && storedMaster) {
+      setEmail(storedEmail);
+      setMasterPassword(storedMaster);
+      handleLoginStored(storedEmail, storedMaster);
+    }
+    // eslint-disable-next-line
+  }, []);
+
+  // Helper for logging in with stored credentials
+  const handleLoginStored = async (storedEmail, storedMaster) => {
+    try {
+      const res = await axios.post('/retrieve-passwords', {
+        email: storedEmail,
+        master_password: storedMaster,
+      });
+      setPasswords(res.data.passwords);
+      setIsAuthenticated(true);
+    } catch (err) {
+      console.error('Auto-login failed', err);
+    }
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -25,6 +51,8 @@ const VaultPage = () => {
       setPasswords(res.data.passwords);
       setIsAuthenticated(true);
       setAuthError('');
+      localStorage.setItem("email", email);
+      localStorage.setItem("masterPassword", masterPassword);
     } catch (err) {
       setAuthError(err.response?.data?.detail || 'Login failed.');
     }

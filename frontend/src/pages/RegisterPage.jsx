@@ -29,7 +29,7 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="register-container">
+    <div className="island">
       <h2>Register</h2>
       <form onSubmit={handleRegister}>
         <input
@@ -56,7 +56,7 @@ const RegisterPage = () => {
         <button type="submit">Register</button>
       </form>
       {error && <p className="error">{error}</p>}
-      {success && <p className="success">Registration successful! Redirecting to login...</p>}
+      {success && <p className="success">Registration successful! Redirecting to your vault...</p>}
     </div>
   );
 };

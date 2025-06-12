@@ -13,14 +13,24 @@
   }
 }
 
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to right, #1f1c2c, #928dab);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+  background-color: transparent;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  font-size: 16px;
   color: white;
 }
 
@@ -35,4 +45,46 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.island {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fff;
+  text-align: center;
+  width: 350px;
+}
+
+.island button {
+  padding: 12px 25px;
+  margin-top: 20px;
+  border: none;
+  background: #ffffff;
+  color: #333;
+  font-weight: bold;
+  border-radius: 30px;
+  transition: all 0.4s ease;
+  cursor: pointer;
+}
+
+.island button:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
+
+.island button {
+  width: 100%;
+  padding: 12px 25px;
+  margin-top: 20px;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-weight: bold;
+  border-radius: 30px;
+  transition: all 0.4s ease;
+  cursor: pointer;
 }

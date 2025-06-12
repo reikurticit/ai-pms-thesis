@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Depends
 from pydantic import BaseModel
 from argon2 import PasswordHasher
 
@@ -11,6 +11,13 @@ import base64
 from ai_module.password_generator import generate_password
 
 import math
+
+from backend.database import engine, SessionLocal
+from backend.models import Base, User, PasswordVault
+from sqlalchemy.orm import Session
+from passlib.hash import bcrypt
+
+Base.metadata.create_all(bind=engine)
 
 
 app = FastAPI()
@@ -27,10 +34,12 @@ app.add_middleware(
 )
 ph = PasswordHasher()
 
-# In-memory "user database"
-# {email: [list of password entries]}
-users_db = {}
-vault_db = {}  
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 # Pydantic models
 class RegisterRequest(BaseModel):
@@ -83,30 +92,34 @@ def decrypt_password(enc_data: dict, key: bytes) -> str:
     return aesgcm.decrypt(nonce, ciphertext, None).decode()
 
 @app.post("/register")
-def register(req: RegisterRequest):
-    if req.email in users_db:
+def register(req: RegisterRequest, db: Session = Depends(get_db)):
+    existing_user = db.query(User).filter(User.email == req.email).first()
+    if existing_user:
         raise HTTPException(status_code=400, detail="User already exists.")
     hashed_password = ph.hash(req.password)
-    users_db[req.email] = hashed_password
+    new_user = User(email=req.email, hashed_password=hashed_password)
+    db.add(new_user)
+    db.commit()
     return {"message": "User registered successfully."}
 
 @app.post("/login")
-def login(req: LoginRequest):
-    if req.email not in users_db:
+def login(req: LoginRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == req.email).first()
+    if not user:
         raise HTTPException(status_code=401, detail="User not found.")
     try:
-        ph.verify(users_db[req.email], req.password)
+        ph.verify(user.hashed_password, req.password)
     except:
         raise HTTPException(status_code=401, detail="Incorrect password.")
     return {"message": "Login successful."}
 
 @app.post("/store-password")
-def store_password(req: StorePasswordRequest):
-    if req.email not in users_db:
+def store_password(req: StorePasswordRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == req.email).first()
+    if not user:
         raise HTTPException(status_code=401, detail="User not found.")
-    # Verify the password (optional)
     try:
-        ph.verify(users_db[req.email], req.master_password)
+        ph.verify(user.hashed_password, req.master_password)
     except:
         raise HTTPException(status_code=401, detail="Invalid master password.")
     salt = req.email.encode()  # simple static salt for now
@@ -120,14 +133,15 @@ def store_password(req: StorePasswordRequest):
 
     enc = encrypt_password(password_to_store, key)
 
-    vault_entry = {
-        "site": req.site,
-        "encrypted_password": enc
-    }
+    vault_entry = PasswordVault(
+        user_id=user.id,
+        site=req.site,
+        nonce=enc["nonce"],
+        encrypted_password=enc["ciphertext"]
+    )
 
-    if req.email not in vault_db:
-        vault_db[req.email] = []
-    vault_db[req.email].append(vault_entry)
+    db.add(vault_entry)
+    db.commit()
 
     return {
         "message": "Password stored securely.",
@@ -136,25 +150,28 @@ def store_password(req: StorePasswordRequest):
     }
 
 @app.post("/retrieve-passwords")
-def retrieve_passwords(req: RetrievePasswordsRequest):
-    if req.email not in users_db:
+def retrieve_passwords(req: RetrievePasswordsRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == req.email).first()
+    if not user:
         raise HTTPException(status_code=401, detail="User not found.")
     try:
-        ph.verify(users_db[req.email], req.master_password)
+        ph.verify(user.hashed_password, req.master_password)
     except:
         raise HTTPException(status_code=401, detail="Invalid master password.")
 
     salt = req.email.encode()
     key = derive_key(req.master_password, salt)
 
-    if req.email not in vault_db:
+    vault_entries = db.query(PasswordVault).filter(PasswordVault.user_id == user.id).all()
+    if not vault_entries:
         return {"passwords": []}
 
     results = []
-    for entry in vault_db[req.email]:
-        decrypted = decrypt_password(entry["encrypted_password"], key)
+    for entry in vault_entries:
+        enc_data = {"nonce": entry.nonce, "ciphertext": entry.encrypted_password}
+        decrypted = decrypt_password(enc_data, key)
         results.append({
-            "site": entry["site"],
+            "site": entry.site,
             "password": decrypted
         })
     return {"passwords": results}
